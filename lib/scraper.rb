@@ -1,6 +1,7 @@
 require 'net/http'
 require 'pry'
 require 'json'
+require 'yaml'
 
 class Scraper
   attr_accessor :response, :q, :page, :per_page
@@ -22,7 +23,7 @@ class Scraper
   def get
     uri = URI("https://api.github.com/search/repositories#{@params}")
     response = Net::HTTP.get(uri)
-    raise "Nothing is returned by getting #{uri}." unless @response
+    raise "Nothing is returned by getting #{uri}." unless response
     @response = JSON.parse(response)
   end
 
@@ -31,7 +32,8 @@ class Scraper
   end
 
   def login
-    token = "25f60e30b657755f324bc5d86689338e882655de"
+    yml   = YAML.load_file(File.join(File.dirname(__FILE__), "../config/application.yml"))
+    token = yml["token"]["github"]
     Octokit::Client.new(access_token: token).user.login
   end
 end
