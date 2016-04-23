@@ -1,7 +1,7 @@
 require 'net/http'
 require 'json'
 require 'active_record'
-require_relative "./database"
+require_relative "./database/repository"
 
 class Parser
   def initialize(content=nil)
