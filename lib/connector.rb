@@ -1,9 +1,9 @@
 require 'net/http'
 require 'pry'
-require 'json'
 require 'yaml'
+require_relative './parser'
 
-class Scraper
+class Connector
   attr_accessor :response, :q, :page, :per_page
 
   def initialize(options={})
@@ -23,8 +23,7 @@ class Scraper
   def get
     uri = URI("https://api.github.com/search/repositories#{@params}")
     response = Net::HTTP.get(uri)
-    raise "Nothing is returned by getting #{uri}." unless response
-    @response = JSON.parse(response)
+    Parser.new(response).parse
   end
 
   def validates_params
