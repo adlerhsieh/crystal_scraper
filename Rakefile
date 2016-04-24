@@ -1,11 +1,11 @@
-Dir["./lib/**/*.rb"].each {|file| require file }
+Dir['./lib/**/*.rb'].each { |file| require file }
 
-desc "Scrape"
+desc 'Scrape'
 task :scrape do
   Connector.new(
-    q: "crystal", 
-    per_page: "2"
-  ).get
+    q: 'crystal',
+    per_page: 8
+  ).iterate
 end
 
 namespace :db do

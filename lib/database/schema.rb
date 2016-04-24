@@ -1,5 +1,5 @@
 require 'active_record'
-require_relative "./database"
+require_relative './database'
 
 class Database::Schema
   def initialize
@@ -12,7 +12,7 @@ class Database::Schema
   end
 
   def reset
-    @con.tables.each {|table| @con.drop_table(table.to_sym) }
+    @con.tables.each { |table| @con.drop_table(table.to_sym) }
     create_schema
   end
 
@@ -20,16 +20,15 @@ class Database::Schema
   end
 
   def create_schema
-    unless @con.table_exists?("repositories")
-      @con.create_table :repositories do |t|
-        t.string  :owner
-        t.string  :repo
-        t.text    :languages
-        t.boolean :has_doc
-        t.integer :github_id
-        t.time    :deleted_at
-        t.timestamps null: false
-      end
+    return if @con.table_exists?('repositories')
+    @con.create_table :repositories do |t|
+      t.string :owner
+      t.string :repo
+      t.text :languages
+      t.boolean :has_doc
+      t.integer :github_id
+      t.time :deleted_at
+      t.timestamps null: false
     end
   end
 end
