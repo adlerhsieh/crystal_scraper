@@ -27,7 +27,7 @@ class Connector
     uri = URI("https://api.github.com/search/repositories#{@params}")
     response = Net::HTTP.get(uri)
     fail "Nothing is returned by getting #{uri}." unless response
-    puts "Fetching repo from: #{uri}"
+    puts "Fetching repo from: #{uri}" unless @count
     @response = JSON.parse(response)
     @count ||= @response["total_count"].to_i
   end
@@ -49,7 +49,14 @@ class Connector
 
   def login
     yml   = YAML.load_file(File.join(File.dirname(__FILE__), '../config/application.yml'))
-    token = yml['token']['github']
-    Octokit::Client.new(access_token: token).user.login
+    id = yml['github']['oauth']['id']
+    secret = yml['github']['oauth']['secret']
+    user = yml['github']['user']
+    Octokit::Client.new(
+      client_id: id,
+      client_secret: secret
+    ).user(user)
+    # token = yml['github']['personal_token']
+    # Octokit::Client.new(access_token: token).user.login
   end
 end

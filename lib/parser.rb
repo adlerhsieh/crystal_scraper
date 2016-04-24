@@ -1,6 +1,7 @@
 require 'net/http'
 require 'json'
 require 'active_record'
+require 'pry'
 require_relative './database/repository'
 
 class Parser
@@ -22,7 +23,7 @@ class Parser
         )
         puts "Created: #{repo['full_name']}"
       else
-        puts "Skipped: #{repo['full_name']}"
+        puts "Skipped: #{repo['full_name']} (#{@percentage*100}%)"
       end
     end
   end
@@ -31,9 +32,10 @@ class Parser
     uri = URI(repo['languages_url'])
     @languages = JSON.parse(Net::HTTP.get(uri))
     fail "Error: API rate limit exceeded." if exceeded?
-    return false unless @languages.keys.include?('Crystal')
+    crystal = @languages.keys.include?('Crystal') ? @languages['Crystal'].to_f : 0.0
     total = @languages.inject(0) { |r, p| r += p[1] }
-    (@languages['Crystal'].to_f / total.to_f) > 0.5
+    @percentage = crystal / total.to_f
+    @percentage > 0.5
   end
 
   def exceeded?
