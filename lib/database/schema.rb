@@ -27,6 +27,7 @@ class Database::Schema
       t.text :languages
       t.boolean :has_doc
       t.integer :github_id
+      t.boolean :crystal
       t.time :deleted_at
       t.timestamps null: false
     end

@@ -3,6 +3,7 @@ require 'json'
 require 'active_record'
 require 'pry'
 require_relative './database/repository'
+require_relative './conf'
 
 class Parser
   def initialize(repos = [])
@@ -13,32 +14,32 @@ class Parser
     Database.connect
     @repos.each do |repo|
       next if Database::Repository.find_by_github_id(repo['id'])
-      if crystal?(repo)
-        Database::Repository.create!(
-          owner:     repo['owner']['login'],
-          repo:      repo['name'],
-          languages: @languages,
-          github_id: repo['id'],
-          has_doc:   false
-        )
-        puts "Created: #{repo['full_name']}"
-      else
-        puts "Skipped: #{repo['full_name']} (#{@percentage*100}%)"
-      end
+      repository = Database::Repository.new(
+        owner:     repo['owner']['login'],
+        repo:      repo['name'],
+        languages: languages(repo),
+        github_id: repo['id'],
+        has_doc:   false
+      )
+      repository.save!
+      puts "Created: #{repo['full_name']}"
     end
   end
 
-  def crystal?(repo)
-    uri = URI(repo['languages_url'])
+  def languages(repo)
+    uri = authenticated_uri(repo["languages_url"])
     @languages = JSON.parse(Net::HTTP.get(uri))
     fail "Error: API rate limit exceeded." if exceeded?
-    crystal = @languages.keys.include?('Crystal') ? @languages['Crystal'].to_f : 0.0
-    total = @languages.inject(0) { |r, p| r += p[1] }
-    @percentage = crystal / total.to_f
-    @percentage > 0.5
+    @languages
   end
 
   def exceeded?
     @languages["message"].to_s.include?("API rate limit exceeded") 
+  end
+
+  def authenticated_uri(url)
+    client_id = Conf.yml['github']['oauth']['id']
+    client_secret = Conf.yml['github']['oauth']['secret']
+    URI("#{url}?client_id=#{client_id}&client_secret=#{client_secret}")
   end
 end
